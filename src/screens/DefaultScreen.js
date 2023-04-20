@@ -28,19 +28,9 @@ export default function DefaultScreen() {
                     navigator.navigate("PrestamosCrudS")
                 }}></Button>
             <Button
-                title={"da click para ir a la pantalla de PrestamosCreateScreen"}
-                onPress={() => {
-                    navigator.navigate("PrestamosCreateS")
-                }}></Button>
-            <Button
                 title={"da click para ir a la pantalla de LibrosCrudScreen"}
                 onPress={() => {
                     navigator.navigate("LibrosCrudS")
-                }}></Button>
-            <Button
-                title={"da click para ir a la pantalla de LibrosCreateScreen"}
-                onPress={() => {
-                    navigator.navigate("LibrosCreateS")
                 }}></Button>
         </View>
     )
