@@ -1,11 +1,10 @@
-import { StyleSheet, Text, View } from 'react-native'
+import { StyleSheet, Text, View,Image } from 'react-native'
 import React from 'react'
 import { BackHandler } from 'react-native';
 import { useEffect } from 'react';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { Button } from 'react-native-elements';
 import { useNavigation } from '@react-navigation/native';
-
 
 export default function LoginScreen() {
     navigator=useNavigation();
@@ -25,9 +24,12 @@ export default function LoginScreen() {
     return (
         <View style={styles.Container1}>
             <KeyboardAwareScrollView>
+            <Image
+                source={require('../../assets/images/pila-de-libros.png')} style={styles.icon}
+                />
                 <Text>IndexScreen</Text>
                <Button 
-               title={"login"} 
+               title={"Iniciar sesion"} 
                buttonStyle={styles.btn}
                onPress={()=>{
                      navigator.replace("DefaultS")
@@ -51,6 +53,12 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignContent: "center",
         borderRadius: 10,
+        marginTop: 10,
+    },
+    icon: {
+        width: 200,
+        height: 200,
+        alignSelf: "center",
         marginTop: 10,
     },
 })

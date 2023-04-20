@@ -7,8 +7,7 @@ export default function IndexScreen() {
     navigator = useNavigation();
     return (
         <View>
-
-
+            <Text>IndexScreen</Text>
         </View>
     )
 }
