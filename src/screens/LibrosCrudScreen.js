@@ -15,6 +15,7 @@ import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 export default function LibrosCrudScreen() {
   const route = useRoute();
   const libro = route.params;
+  console.log(libro)
   const [titulo, setTitulo] = useState("");
   const [autor, setAutor] = useState("");
   const [descripcion, setDescripcion] = useState("");
@@ -296,8 +297,8 @@ export default function LibrosCrudScreen() {
               <TextInput
                 keyboardType="number-pad"
                 style={{ ...styles.input, ...styles.text }}
-                onChangeText={(number) => setCantidad(number)}
-                value={cantidad.toFixed(0)}
+                onChangeText={(number) => setCantidad(parseInt(number ? number : 0))}
+                value={libro ? cantidad.toFixed(0): ""}
                 editable={libro.mode !== 'view'}
               />
             </View>

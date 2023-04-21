@@ -21,11 +21,9 @@ export default function LibrosViewScreen(props) {
       },
     })
       .then((response) => {
-        console.log(response);
         return response.json();
       })
       .then((data) => {
-        console.log(data);
         setLibros(data.data);
       })
       .catch((error) => {
@@ -34,7 +32,9 @@ export default function LibrosViewScreen(props) {
   };
 
   useEffect(() => {
-    getLibros();
+    const Interval = setInterval(() => {
+      getLibros();
+    }, 500);
   }, []);
 
   return (
@@ -63,7 +63,7 @@ export default function LibrosViewScreen(props) {
                 <Libros autor={libro.autor} titulo={libro.titulo} descripcion={libro.descripcion} cantidad={libro.cantidad} 
                   key={libro.idLibro}
                   onPress={() => {
-                    navigation.navigate("LibrosCrudS", {idLibro: libro.idLibro, autor: libro.autor, titulo: libro.titulo, descripcion: libro.descripcion, cantidad: libro.acantidad, mode: "view"})
+                    navigation.navigate("LibrosCrudS", {idLibro: libro.idLibro, autor: libro.autor, titulo: libro.titulo, descripcion: libro.descripcion, cantidad: libro.cantidad,imagen: libro.imagen, mode: "edit"})
                   }}
                 />
               ))}

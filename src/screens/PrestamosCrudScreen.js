@@ -268,7 +268,7 @@ export default function PrestamosCrudScreen() {
                       cantidad: libro.cantidad,
                       descripcion: libro.descripcion,
                       imagen: libro.imagen,
-                      mode: "edit",
+                      mode: "view",
                     });
                   }}
                 />
