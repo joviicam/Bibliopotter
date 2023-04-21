@@ -33,7 +33,7 @@ export default function LoginScreen() {
                 position: "bottom",
                 text1: "Sesión iniciada",
             });
-            navigator.navigate("DefaultS");
+            navigator.navigate("IndexS");
         }
     };
     const handleBackButton = () => {
