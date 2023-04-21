@@ -10,8 +10,11 @@ import { path } from "../utils/path";
 import Toast from "react-native-toast-message";
 import firebase from "firebase/compat/app";
 import "firebase/compat/storage";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
-export default function LibrosCrudScreen({ mode }) {
+export default function LibrosCrudScreen() {
+  const route = useRoute();
+  const libro = route.params;
   const [titulo, setTitulo] = useState("");
   const [autor, setAutor] = useState("");
   const [descripcion, setDescripcion] = useState("");
@@ -19,8 +22,6 @@ export default function LibrosCrudScreen({ mode }) {
   const [imagen, setImagen] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
   const [imageName, setImageName] = useState(null);
-  const route = useRoute();
-  const libro = route.params;
   const navigation = useNavigation();
   const firebaseConfig = {
     apiKey: "AIzaSyC_jYYWMhj-2csXBwOmqLpcUsQr0Tju7QI",
@@ -28,24 +29,41 @@ export default function LibrosCrudScreen({ mode }) {
     projectId: "recu-bibliopotter",
     storageBucket: "recu-bibliopotter.appspot.com",
     messagingSenderId: "820063868228",
-    appId: "1:820063868228:web:63068c46f15e11c8917311"
+    appId: "1:820063868228:web:63068c46f15e11c8917311",
   };
-  
+
   // Initialize Firebase
   if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
   }
-    const storage = firebase.storage();
+  const storage = firebase.storage();
+
+  useEffect(() => {
+    setTimeout(() => {
+  if(libro.mode === 'view' || libro.mode === 'edit'){
+    setAutor(libro.autor)
+    setTitulo(libro.titulo)
+    setDescripcion(libro.descripcion)
+    setCantidad(libro.cantidad)
+    setImagen(libro.imagen)
+    setSelectedImage(libro.imagen)
+  }
+    }, 300);
+  }, [])
 
   const uploadImage = async (uri, imageName) => {
-    console.log({uri: uri, imageName: imageName})
-    const reference = storage.ref(`/${imageName}`);
-    const task = reference.put(uri, { contentType: "image/jpeg" });
-    await task
-    const url = await reference.getDownloadURL();
-    console.log(url)
-    return url;
-  }
+    const response = await fetch(uri);
+    const blob = await response.blob();
+    const storageRef = ref(getStorage(), `books/${imageName}`);
+    uploadBytes(storageRef, blob).then((snapshot) => {
+      const storage = getStorage();
+      const refImg = ref(storage, snapshot.metadata.fullPath);
+      const url = getDownloadURL(refImg);
+      setImagen(url);
+      console.log({ url2: url });
+      return url;
+    });
+  };
 
   const fetchLibroId = (idLibro) => {
     fetch(`${path}/libros/${idLibro}`, {
@@ -63,13 +81,37 @@ export default function LibrosCrudScreen({ mode }) {
         setTitulo(data.titulo);
         setAutor(data.autor);
         setDescripcion(data.descripcion);
-        setCantidad(data.cantidad);
+        setCantidad(parseInt(data.cantidad));
         setImagen(data.imagen);
       })
       .catch((error) => {
         console.log(error);
       });
   };
+
+  const handleDelete = () => {
+    fetch(`${path}/libros/${libro.idLibro}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => {
+        console.log(response);
+        return response.json();
+      })
+      .then((data) => {
+        Toast.show({
+          type: "success",
+          position: "bottom",
+          text1: "Libro eliminado"
+        })
+        navigation.goBack();
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }
 
   const areFieldsValidated = () => {
     if (
@@ -87,81 +129,100 @@ export default function LibrosCrudScreen({ mode }) {
 
   const handleSubmit = async () => {
     if (areFieldsValidated()) {
-      console.log({imageName: imageName})
-      if(selectedImage) {
-        const url = await uploadImage(selectedImage, imageName);
-        if(url){
-          console.log({url: url})
-          if (mode === "edit") {
-            fetch(`${path}/libros/${libro.idLibro}`, {
-              method: "PUT",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                titulo: titulo,
-                autor: autor,
-                descripcion: descripcion,
-                cantidad: cantidad,
-                imagen: url,
-              }),
-            })
-              .then((response) => {
-                console.log(response);
-                return response.json();
+      console.log({ imageName: imageName });
+      if (selectedImage) {
+        await uploadImage(selectedImage, imageName).then(() => {
+          console.log({imagen: imagen})
+          console.log({imagenUrl: imagen._j})
+          if (imagen) {
+            if (libro.mode === "edit") {
+              fetch(`${path}/libros/${libro.idLibro}`, {
+                method: "PUT",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  titulo: titulo,
+                  autor: autor,
+                  descripcion: descripcion,
+                  cantidad: cantidad,
+                  imagen: imagen._j,
+                }),
               })
-              .then((data) => {
-                console.log(data);
-                navigation.goBack();
+                .then((response) => {
+                  console.log(response);
+                  return response.json();
+                })
+                .then((data) => {
+                  Toast.show({
+                    type: "success",
+                    position: "bottom",
+                    text1: "Libro actualizado"
+                  })
+                  navigation.goBack();
+                })
+                .catch((error) => {
+                  console.log(error);
+                });
+            } else {
+              fetch(`${path}/libros`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  titulo: titulo,
+                  autor: autor,
+                  descripcion: descripcion,
+                  cantidad: cantidad,
+                  imagen: imagen._j,
+                }),
               })
-              .catch((error) => {
-                console.log(error);
-              });
-          } else {
-            fetch(`${path}/libros`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                titulo: titulo,
-                autor: autor,
-                descripcion: descripcion,
-                cantidad: cantidad,
-                imagen: url,
-              }),
-            })
-              .then((response) => {
-                console.log(response);
-                return response.json();
-              })
-              .then((data) => {
-                console.log(data);
-                navigation.goBack();
-              })
-              .catch((error) => {
-                console.log(error);
-              });
+                .then((response) => {
+                  console.log(response);
+                  return response.json();
+                })
+                .then((data) => {
+                  if(!data.error){
+                    Toast.show({
+                      type: "success",
+                      position: "bottom",
+                      text1: "Libro creado"
+                    })
+                    navigation.goBack();
+                  } else {
+                    Toast.show({
+                      type: "error",
+                      position: "bottom",
+                      text1: "Libro no creado",
+                      text2: data.error
+                    })
+                  }
+                })
+                .catch((error) => {
+                  console.log(error);
+                });
+            }
           }
-        }
+        });
       } else {
         Toast.show({
           type: "error",
           position: "bottom",
           text1: "Error, imagen no definida",
-        })
+        });
       }
     } else {
       Toast.show({
         type: "error",
         position: "bottom",
         text1: "Error, todos los campos son obligatorios",
-      })
+      });
     }
   };
 
   useEffect(() => {
-    if (mode === "edit" || mode === "view") {
+    if (libro.mode === "edit" || libro.mode === "view") {
       fetchLibroId(libro.idLibro);
     }
   }, []);
@@ -174,11 +235,11 @@ export default function LibrosCrudScreen({ mode }) {
       quality: 1,
     });
 
-    console.log({result: result})
+    console.log({ result: result });
 
     if (!result.cancelled) {
       setSelectedImage(result.uri);
-      setImageName(result.uri.split("/").pop());
+      uploadImage(result.uri, result.uri.split("/").pop());
     } else {
       setSelectedImage(null);
     }
@@ -196,6 +257,8 @@ export default function LibrosCrudScreen({ mode }) {
               <TextInput
                 style={{ ...styles.input, ...styles.text }}
                 onChangeText={(text) => setTitulo(text)}
+                value={titulo}
+                editable={libro.mode !== 'view'}
               />
             </View>
           </View>
@@ -207,6 +270,8 @@ export default function LibrosCrudScreen({ mode }) {
               <TextInput
                 style={{ ...styles.input, ...styles.text }}
                 onChangeText={(text) => setAutor(text)}
+                value={autor}
+                editable={libro.mode !== 'view'}
               />
             </View>
           </View>
@@ -218,6 +283,8 @@ export default function LibrosCrudScreen({ mode }) {
               <Textarea
                 style={{ ...styles.textArea, ...styles.text }}
                 onChangeText={(text) => setDescripcion(text)}
+                value={descripcion}
+                editable={libro.mode !== 'view'}
               />
             </View>
           </View>
@@ -230,6 +297,8 @@ export default function LibrosCrudScreen({ mode }) {
                 keyboardType="number-pad"
                 style={{ ...styles.input, ...styles.text }}
                 onChangeText={(number) => setCantidad(number)}
+                value={cantidad.toFixed(0)}
+                editable={libro.mode !== 'view'}
               />
             </View>
           </View>
@@ -240,11 +309,12 @@ export default function LibrosCrudScreen({ mode }) {
             <View>
               <Image
                 style={{ ...styles.image }}
-                source={{ uri: selectedImage ? selectedImage : null }}
+                source={{ uri: selectedImage }}
               />
             </View>
             <View style={{ marginTop: 25 }}>
               <Button
+                disabled={libro.mode === 'view'}
                 onPress={handleSelectImage}
                 buttonStyle={{ ...styles.btnImg }}
                 title={"Seleccionar desde galería"}
@@ -252,13 +322,15 @@ export default function LibrosCrudScreen({ mode }) {
             </View>
           </View>
           <View style={{ width: "100%" }}>
-            { mode !== 'view' ? <View style={{ marginTop: 45 }}>
-              <Button
-                onPress={handleSubmit}
-                buttonStyle={{ ...styles.btnSave }}
-                title={"Guardar"}
-              />
-            </View>:null}
+            {libro.mode !== "view" ? (
+              <View style={{ marginTop: 45 }}>
+                <Button
+                  onPress={handleSubmit}
+                  buttonStyle={{ ...styles.btnSave }}
+                  title={"Guardar"}
+                />
+              </View>
+            ) : null}
             <View style={{ marginTop: 25, ...styles.containerBtn }}>
               <Button
                 onPress={() => {
@@ -267,9 +339,9 @@ export default function LibrosCrudScreen({ mode }) {
                 buttonStyle={{ ...styles.btnCancel }}
                 title={"Atrás"}
               />
-              {mode === "edit" || mode === "view" ? (
+              {libro.mode === "edit" ? (
                 <Button
-                  //onPress={}
+                  onPress={handleDelete}
                   buttonStyle={{ ...styles.btnDelete }}
                   title={"Eliminar"}
                 />
@@ -305,6 +377,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 10,
     backgroundColor: colors.input,
+    fontWeight: "bold",
   },
   textArea: {
     marginTop: 15,
@@ -316,6 +389,7 @@ const styles = StyleSheet.create({
     padding: 10,
     textAlignVertical: "top",
     backgroundColor: colors.input,
+    fontWeight: "bold",
   },
   view: {
     width: "100%",

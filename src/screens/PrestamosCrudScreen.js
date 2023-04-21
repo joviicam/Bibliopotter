@@ -8,13 +8,40 @@ import { path } from "../utils/path";
 import colors from "../utils/colors";
 import Toast from "react-native-toast-message";
 
-export default function PrestamosCrudScreen({ mode }) {
+export default function PrestamosCrudScreen() {
   const route = useRoute();
   const prestamo = route.params;
-  const [selectedValue, setSelectedValue] = useState(prestamo ? prestamo.idLibro : "");
+  const [selectedValue, setSelectedValue] = useState("");
   const [libros, setLibros] = useState([]);
-  const [nombrePersona, setNombrePersona] = useState(prestamo ? prestamo.nombrePersona : "");
+  const [nombrePersona, setNombrePersona] = useState("");
   const navigation = useNavigation();
+
+  useEffect(() => {
+    setTimeout(() => {
+      setNombrePersona(prestamo.nombrePersona);
+      setSelectedValue(prestamo.idLibro);
+    }, 300);
+  }, []);
+
+  const fetchLibroId = (idLibro) => {
+    fetch(`${path}/libros/${idLibro}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => {
+        console.log(response);
+        return response.json();
+      })
+      .then((data) => {
+        console.log(data);
+        setSelectedValue(data.data.idLibro);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }
 
   const fetchLibros = () => {
     fetch(`${path}/libros`, {
@@ -37,14 +64,16 @@ export default function PrestamosCrudScreen({ mode }) {
   };
 
   const updateLibro = (idLibro, prestamo) => {
-    const libro = libros.find(libro => libro.idLibro === selectedValue)
+    const libro = libros.find((libro) => libro.idLibro === selectedValue);
     fetch(`${path}/libros/${idLibro}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        cantidad: prestamo ? parseInt(libro.cantidad) - 1 : parseInt(libro.cantidad) + 1,
+        cantidad: prestamo
+          ? parseInt(libro.cantidad) - 1
+          : parseInt(libro.cantidad) + 1,
       }),
     })
       .then((response) => {
@@ -56,8 +85,8 @@ export default function PrestamosCrudScreen({ mode }) {
       .catch((error) => {
         console.log(error);
       });
-  }
-  
+  };
+
   const areFieldsValidated = () => {
     if (nombrePersona === "" || selectedValue === null) {
       return false;
@@ -66,10 +95,10 @@ export default function PrestamosCrudScreen({ mode }) {
   };
 
   const handleSubmit = () => {
-    if(areFieldsValidated()){
-      const libro = libros.find(libro => libro.idLibro === selectedValue)
-      if(mode !== 'edit'){
-        if(libro.cantidad > 0){
+    if (areFieldsValidated()) {
+      const libro = libros.find((libro) => libro.idLibro === selectedValue);
+      if (prestamo.mode !== "edit") {
+        if (libro.cantidad > 0) {
           fetch(`${path}/prestamos`, {
             method: "POST",
             headers: {
@@ -92,13 +121,13 @@ export default function PrestamosCrudScreen({ mode }) {
                 text1: "Prestamo creado",
               });
               navigation.goBack();
-            })
+            });
         } else {
           Toast.show({
             type: "error",
             position: "bottom",
             text1: "Error, no hay libros disponibles",
-          })
+          });
         }
       } else {
         fetch(`${path}/prestamos/${prestamo.idPrestamo}`, {
@@ -123,10 +152,10 @@ export default function PrestamosCrudScreen({ mode }) {
               text1: "Prestamo actualizado",
             });
             navigation.goBack();
-          })
+          });
       }
     }
-  }
+  };
 
   const handleDelete = () => {
     fetch(`${path}/prestamos/${prestamo.idPrestamo}`, {
@@ -139,7 +168,7 @@ export default function PrestamosCrudScreen({ mode }) {
         console.log(response);
         return response.json();
       })
-      .then((data) => { 
+      .then((data) => {
         updateLibro(prestamo.idLibro, false);
         Toast.show({
           type: "success",
@@ -151,10 +180,10 @@ export default function PrestamosCrudScreen({ mode }) {
       .catch((error) => {
         console.log(error);
       });
-  }
+  };
 
   useEffect(() => {
-    if (mode === "edit" || mode === "view") {
+    if (prestamo.mode === "edit" || prestamo.mode === "view") {
       fetch(`${path}/prestamos/${prestamo.idPrestamo}`, {
         method: "GET",
         headers: {
@@ -168,8 +197,8 @@ export default function PrestamosCrudScreen({ mode }) {
         .then((data) => {
           console.log(data);
           fetchLibros();
-          setSelectedValue(data.libro.idLibro);
-          setNombrePersona(data.nombrePersona);
+          setSelectedValue(prestamo.idLibro);
+          setNombrePersona(prestamo.nombrePersona);
         })
         .catch((error) => {
           console.log(error);
@@ -204,19 +233,11 @@ export default function PrestamosCrudScreen({ mode }) {
                 <Picker
                   selectedValue={selectedValue}
                   onValueChange={(itemValue) => setSelectedValue(itemValue)}
-                  enabled={mode === "edit" || mode === "view" ? false : true}
+                  enabled={prestamo.mode === "edit" || prestamo.mode === "view" ? false : true}
                 >
                   <Picker.Item
-                    label={
-                      mode === "edit" || mode === "view"
-                        ? libros[0].titulo
-                        : "Selecciona un libro"
-                    }
-                    value={
-                      mode === "edit" || mode === "view"
-                        ? libros[0].idLibro
-                        : null
-                    }
+                    label={"Selecciona un libro"}
+                    value={null}
                   />
                   {libros
                     ? libros.map((libro, index) =>
@@ -231,17 +252,38 @@ export default function PrestamosCrudScreen({ mode }) {
                     : null}
                 </Picker>
               </View>
+              <View style={{ marginTop: 15 }}>
+                <Button
+                  title={"Ver detalles del libro..."}
+                  disabled={!selectedValue}
+                  buttonStyle={{ ...styles.btnDetails }}
+                  onPress={() => {
+                    const libro = libros.find(
+                      (libro) => libro.idLibro === selectedValue
+                    );
+                    navigation.navigate("LibrosCrudS", {
+                      idLibro: libro.idLibro,
+                      titulo: libro.titulo,
+                      autor: libro.autor,
+                      cantidad: libro.cantidad,
+                      descripcion: libro.descripcion,
+                      imagen: libro.imagen,
+                      mode: "edit",
+                    });
+                  }}
+                />
+              </View>
             </View>
           </View>
         </View>
         <View style={{ height: "30%" }}>
           <View style={{ width: "100%" }}>
-            {mode === "view" ? null : (
+            {prestamo.mode === "view" ? null : (
               <View style={{ marginTop: 45 }}>
                 <Button
                   onPress={handleSubmit}
                   buttonStyle={{ ...styles.btnSave }}
-                  title={mode === "edit" ? "Guardar" : "Prestar"}
+                  title={prestamo.mode === "edit" ? "Guardar" : "Prestar"}
                 />
               </View>
             )}
@@ -255,14 +297,15 @@ export default function PrestamosCrudScreen({ mode }) {
                   title={"Atrás"}
                 />
               </View>
-              {mode === 'edit' ?
+              {prestamo.mode === "edit" ? (
                 <View>
-                <Button
-                  onPress={handleDelete}
-                  buttonStyle={{ ...styles.btnDelete }}
-                  title={"Devolver"}
-                />
-              </View>: null}
+                  <Button
+                    onPress={handleDelete}
+                    buttonStyle={{ ...styles.btnDelete }}
+                    title={"Devolver"}
+                  />
+                </View>
+              ) : null}
             </View>
           </View>
         </View>
@@ -345,5 +388,12 @@ const styles = StyleSheet.create({
     alignContent: "center",
     paddingLeft: 35,
     paddingRight: 35,
+  },
+  btnDetails: {
+    marginTop: 15,
+    width: "100%",
+    height: 50,
+    borderRadius: 12,
+    backgroundColor: "#885FCA",
   },
 });
