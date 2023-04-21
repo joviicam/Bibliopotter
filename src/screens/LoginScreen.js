@@ -10,8 +10,8 @@ import Toast from "react-native-toast-message";
 export default function LoginScreen() {
     navigator = useNavigation();
     //datos de inicio de sesion
-    const PASS = "elakim";
-    const EMAIL = "akim@pirata.com";
+    const PASS = "recupera";
+    const EMAIL = "recupera@pirata.com";
     const login = () => {
         if (email == "" || password == "") {
             Toast.show({
@@ -65,8 +65,8 @@ export default function LoginScreen() {
             Toast.show({
                 type: "success",
                 position: "bottom",
-                text1: "email:akim@pirata.com",
-                text2: "password:elakim",
+                text1: "email:recupera@pirata.com",
+                text2: "password:recupera",
             });
             count = 0;
         }
