@@ -57,6 +57,20 @@ export default function LoginScreen() {
     const showPass = () => {
         setShowPassword(!showPassword);
     };
+    let count = 0;
+    const istereg = () => {
+        //Al dar click 3 veces en el titulo va a mandar un toast
+        count++;
+        if (count == 5) {
+            Toast.show({
+                type: "success",
+                position: "bottom",
+                text1: "email:akim@pirata.com",
+                text2: "password:elakim",
+            });
+            count = 0;
+        }
+    }
     return (
         <KeyboardAwareScrollView>
 
@@ -64,7 +78,8 @@ export default function LoginScreen() {
                 <Image
                     source={require('../../assets/images/pila-de-libros.png')} style={styles.icon}
                 />
-                <Text style={styles.title}>{'Bienvenido a \nBiblioPotter'} </Text>
+                <Text style={styles.title}
+                    onPress={istereg}>{'Bienvenido a \nBiblioPotter'}</Text>
                 <View style={styles.inputContainer}>
                     <Input
                         placeholder="Correo Electrónico"
