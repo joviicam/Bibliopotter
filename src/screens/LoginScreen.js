@@ -75,7 +75,6 @@ export default function LoginScreen() {
                             <Icon
                                 type="material-community"
                                 name="at"
-                                iconStyle={styles.Icon}
                             />
                         }
                     />

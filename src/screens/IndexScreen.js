@@ -1,29 +1,35 @@
-import { StyleSheet, Text, View, Image } from 'react-native'
+import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native'
 import React from 'react'
 import { Button } from 'react-native-elements'
 import { useNavigation } from '@react-navigation/native'
 import colors from '../utils/colors';
-import { TouchableOpacity } from 'react-native-gesture-handler';
 
 export default function IndexScreen() {
     const navigator = useNavigation();
-    const navegacion1 = () => {
+
+    const handlePressLibros = () => {
         navigator.navigate('LibrosViewS');
-    }
+    };
+
+    const handlePressPrestamos = () => {
+        navigator.navigate('PrestamosViewS');
+    };
+
     return (
         <View style={styles.container}>
             <Text style={styles.title}>{'Presiona la opción \ndeseada'}</Text>
             <View style={styles.container2}>
-                <TouchableOpacity onPress={navegacion1}>
-                    <View style={styles.contenedor}>
-                        <Image
-                            source={require('../../assets/images/libro-magico.png')} style={styles.icon}
-
-                        />
-                    </View>
+                <TouchableOpacity style={styles.contenedor} onPress={() => {
+                    navigator.navigate('LibrosViewS')
+                }}>
+                    <Image
+                        source={require('../../assets/images/libro-magico.png')}
+                        style={styles.icon}
+                    />
                 </TouchableOpacity>
-                <TouchableOpacity
-                    onPress={navegacion1}>
+                <TouchableOpacity onPress={() => {
+                    navigator.navigate('PrestamosViewS')
+                }}>
                     <View style={styles.contenedor}>
                         <Image
                             source={require('../../assets/images/libro.png')} style={styles.icon}

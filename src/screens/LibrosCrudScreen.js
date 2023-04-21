@@ -5,6 +5,7 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import Textarea from "react-native-textarea";
 import { Button } from "react-native-elements";
 import * as ImagePicker from "expo-image-picker";
+import colors from "../utils/colors";
 
 export default function LibrosCrudScreen() {
   const [titulo, setTitulo] = useState("");
@@ -129,6 +130,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: "10%",
     flex: 1,
+    backgroundColor: colors.fondo
   },
   text: {
     fontSize: 20,
