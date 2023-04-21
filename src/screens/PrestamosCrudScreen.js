@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Picker } from "@react-native-picker/picker";
 import { Button } from "react-native-elements";
 import { useNavigation, useRoute } from "@react-navigation/native";
+import { path } from "../utils/path";
 
 export default function PrestamosCrudScreen() {
   const route = useRoute();
@@ -15,7 +16,7 @@ export default function PrestamosCrudScreen() {
   const navigation = useNavigation();
 
   useEffect(() => {
-    fetch(`${}`)
+    fetch(`${path}`)
     setLibros([
       { label: "Harry Potter", value: "Harry Potter" },
     ]);
