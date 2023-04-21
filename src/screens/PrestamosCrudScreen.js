@@ -5,21 +5,60 @@ import { Picker } from "@react-native-picker/picker";
 import { Button } from "react-native-elements";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { path } from "../utils/path";
+import colors from "../utils/colors";
 
-export default function PrestamosCrudScreen() {
+export default function PrestamosCrudScreen({ mode }) {
   const route = useRoute();
   const prestamo = route.params;
   const [selectedValue, setSelectedValue] = useState(null);
-  const [libros, setLibros] = useState([
-    { label: "Selecciona un libro", value: null },
-  ]);
+  const [libros, setLibros] = useState([]);
+  const [nombrePersona, setNombrePersona] = useState("");
   const navigation = useNavigation();
 
+  const fetchLibros = () => {
+    fetch(`${path}/libros`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => {
+        console.log(response);
+        return response.json();
+      })
+      .then((data) => {
+        console.log(data);
+        setLibros(data.data);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }
+
   useEffect(() => {
-    fetch(`${path}`)
-    setLibros([
-      { label: "Harry Potter", value: "Harry Potter" },
-    ]);
+    if(mode === "edit" || mode === "view"){
+      fetch(`${path}/prestamos/${prestamo.idPrestamo}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+        .then((response) => {
+          console.log(response);
+          return response.json();
+        })
+        .then((data) => {
+          console.log(data);
+          fetchLibros()
+          setSelectedValue(data.libro.idLibro);
+          setNombrePersona(data.nombrePersona);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    } else {
+      fetchLibros();
+    }
   }, []);
 
   return (
@@ -31,7 +70,7 @@ export default function PrestamosCrudScreen() {
               <Text style={{ ...styles.text }}>Nombre del cliente:</Text>
             </View>
             <View>
-              <TextInput style={{ ...styles.input, ...styles.text }} />
+              <TextInput style={{ ...styles.input, ...styles.text }} value={nombrePersona} onChangeText={(text) => setNombrePersona(text)}/>
             </View>
           </View>
           <View style={{ marginTop: 45 }}>
@@ -44,9 +83,10 @@ export default function PrestamosCrudScreen() {
                   selectedValue={selectedValue}
                   onValueChange={(itemValue) => setSelectedValue(itemValue)}
                 >
+                  <Picker.Item label={"Selecciona un libro"} value={null}/>
                   {libros
-                    ? libros.map((libro) => (
-                        <Picker.Item label={libro.label} value={libro.value} />
+                    ? libros.map((libro, index) => (
+                        <Picker.Item label={libro.titulo} value={libro.idLibro} key={index}/>
                       ))
                     : null}
                 </Picker>
@@ -97,6 +137,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: "10%",
     flex: 1,
+    backgroundColor: colors.fondo
   },
   view: {
     width: "100%",
@@ -113,6 +154,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 12,
     padding: 10,
+    backgroundColor: colors.input
   },
   picker: {
     marginTop: 15,
@@ -122,6 +164,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 12,
     padding: 10,
+    backgroundColor: colors.input
   },
   btnSave: {
     backgroundColor: "#64C54B",
