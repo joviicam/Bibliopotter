@@ -72,9 +72,10 @@ export default function LoginScreen() {
         }
     }
     return (
-        <KeyboardAwareScrollView>
 
-            <View style={styles.Container1}>
+        <View style={styles.Container1}>
+            <KeyboardAwareScrollView>
+
                 <Image
                     source={require('../../assets/images/pila-de-libros.png')} style={styles.icon}
                 />
@@ -121,8 +122,9 @@ export default function LoginScreen() {
                         login();
                     }}
                 ></Button>
-            </View>
-        </KeyboardAwareScrollView>
+            </KeyboardAwareScrollView>
+
+        </View>
 
     )
 }
@@ -144,6 +146,7 @@ const styles = StyleSheet.create({
         width: 200,
         height: 50,
         marginBottom: 140,
+        alignSelf: "center",
     },
     icon: {
         width: 200,
